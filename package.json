@@ -1,0 +1,37 @@
+{
+  "name": "dsh-ollama-autostart",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness 插件: 随 dsh 启动在后台无窗口拉起本地 Ollama 服务(ollama serve), 退出 dsh 时关闭本次拉起的实例。",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./package.json": "./package.json"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "ollama",
+    "llm",
+    "local-model"
+  ],
+  "license": "MIT",
+  "files": [
+    "index.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "displayName": "Ollama 自动启动",
+    "description": "随 DeepSeek Harness 启动, 无窗口拉起本地 Ollama(本地模型依赖其 11434 端口); 退出 dsh 时关闭本次拉起的实例。",
+    "engines": {
+      "dsh": ">=0.2.0-rc.2"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

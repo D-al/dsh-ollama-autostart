@@ -41,6 +41,8 @@ https://github.com/D-al/dsh-ollama-autostart.git
 | `OLLAMA_EXE` | `ollama.exe` 的完整路径 | 自动探测（见「前提」） |
 | `OLLAMA_RUN_LOG` | Ollama 运行日志路径 | 插件目录旁 `ollama-run.log` |
 | `OLLAMA_DEBUG_LOG` | 插件调试日志路径 | 插件目录旁 `ollama-debug.log` |
+| `OLLAMA_KV_CACHE_TYPE` | KV cache 量化类型。小显存显卡（如 8GB）跑大上下文必须设 `q8_0`，否则 fp16 KV 在加载时即 OOM；大显存可设 `f16` | `q8_0` |
+| `OLLAMA_FLASH_ATTENTION` | flash attention 开关，长上下文更省显存更快 | `1` |
 
 ## 调试
 
@@ -54,6 +56,7 @@ https://github.com/D-al/dsh-ollama-autostart.git
 | --- | --- |
 | dsh 启动后本地模型仍连不上 | 看 `ollama-debug.log`：是否"未找到 Ollama 安装目录"→ 设 `OLLAMA_EXE`；是否 30s 未就绪 → 看 `ollama-run.log` |
 | 日志里 "Listening on ..." 但 API 暂时超时 | 首次启动有 GPU 发现阶段，期间端口已 listen 但不响应 API，稍候即可 |
+| 大上下文（如 num_ctx 32768）加载即失败 / 生成中断开 | 8GB 显卡上 fp16 KV cache 放不下：确认插件已在传 `OLLAMA_KV_CACHE_TYPE=q8_0`（见 `ollama-debug.log` 的 serve env 行），必要时把模型 `num_ctx` 降到 24576 |
 | 任务栏没有 Ollama 图标 | 正常，本插件就是无窗口启动；要看状态用 `ollama --version` 或上面的 curl |
 | 改了插件代码不生效 | ESM 按 URL 缓存，需**完整退出重启 dsh** |
 

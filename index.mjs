@@ -95,12 +95,21 @@ export function apply(ctx, config) {
         dbg('启动 Ollama: exe=' + exe + ' port=' + port)
         // 无窗口启动: stdio 给真实日志文件(空设备会让部分程序启动即崩),
         // windowsHide + detached + CREATE_NO_WINDOW 三保险, 任务栏无图标。
+        // 显存优化环境变量(8GB 显卡实测必需; 可用环境变量或插件配置覆盖):
+        //   OLLAMA_KV_CACHE_TYPE=q8_0  —— KV cache 8bit 量化, 显存约省一半,
+        //     否则 num_ctx 32768 的 fp16 KV 在 8GB 卡上加载即 OOM。大显存可设 f16。
+        //   OLLAMA_FLASH_ATTENTION=1   —— flash attention, 长上下文更省显存更快。
+        const serveEnv = { ...process.env }
+        serveEnv.OLLAMA_KV_CACHE_TYPE = process.env.OLLAMA_KV_CACHE_TYPE || (config && config.ollamaKvCacheType) || 'q8_0'
+        serveEnv.OLLAMA_FLASH_ATTENTION = process.env.OLLAMA_FLASH_ATTENTION || (config && config.ollamaFlashAttention) || '1'
+        dbg('serve env: KV_CACHE_TYPE=' + serveEnv.OLLAMA_KV_CACHE_TYPE + ' FLASH_ATTENTION=' + serveEnv.OLLAMA_FLASH_ATTENTION)
         const logFd = fs.openSync(logPath, 'a')
         child = spawn(exe, ['serve'], {
           detached: true,
           stdio: ['ignore', logFd, logFd],
           windowsHide: true,
           creationFlags: 0x08000000, // CREATE_NO_WINDOW
+          env: serveEnv,
         })
         fs.closeSync(logFd) // 句柄已被子进程继承, 父进程即可关闭
         child.unref()
